@@ -18,4 +18,5 @@ torchvision
 transformers
 wandb
 sglang[all]==0.4.9.post6
+sgl-kernel==0.2.4
 huggingface_hub

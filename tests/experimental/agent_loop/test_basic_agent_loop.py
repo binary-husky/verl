@@ -44,7 +44,7 @@ def init_config() -> DictConfig:
             ],
         )
 
-    model_path = "Qwen/Qwen2.5-1.5B-Instruct"
+    model_path = "/mnt/data_cpfs/xielipeng.xlp/models/Qwen2.5-14B-Instruct"
     config.actor_rollout_ref.model.path = model_path
     config.actor_rollout_ref.rollout.name = os.getenv("ROLLOUT_NAME", "vllm")
     config.actor_rollout_ref.rollout.mode = "async"

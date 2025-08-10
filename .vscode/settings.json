@@ -11,5 +11,25 @@
         "initializer_list": "cpp",
         "utility": "cpp"
     },
-    "iis.configDir": ""
+    "iis.configDir": "",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#8615a9",
+        "activityBar.background": "#8615a9",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#aa8715",
+        "activityBarBadge.foreground": "#15202b",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#8615a9",
+        "statusBar.background": "#620f7c",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#8615a9",
+        "statusBarItem.remoteBackground": "#620f7c",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#620f7c",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#620f7c99",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.remoteColor": "#620f7c"
 }

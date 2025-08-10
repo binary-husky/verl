@@ -109,6 +109,7 @@ class ActorConfig(BaseConfig):
     checkpoint: CheckpointConfig = field(default_factory=CheckpointConfig)
     optim: OptimizerConfig = field(default_factory=OptimizerConfig)
     use_fused_kernels: bool = False
+    override_ppo_mini_batch_num: int = -1
 
     def __post_init__(self):
         """Validate actor configuration parameters."""

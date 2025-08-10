@@ -21,6 +21,7 @@ import logging
 import os
 
 import torch
+import math
 from torch import nn
 from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 
@@ -384,7 +385,12 @@ class DataParallelPPOActor(BasePPOActor):
 
         # Split to make minibatch iterator for updating the actor
         # See PPO paper for details. https://arxiv.org/abs/1707.06347
-        mini_batches = data.split(self.config.ppo_mini_batch_size)
+        if self.config.override_ppo_mini_batch_num > 0:
+            mini_batch_split_size = math.ceil(data.batch.batch_size[0] / self.config.override_ppo_mini_batch_num)
+        else:
+            mini_batch_split_size = self.config.ppo_mini_batch_size
+
+        mini_batches = data.split(mini_batch_split_size)
 
         metrics = {}
         for _ in range(self.config.ppo_epochs):

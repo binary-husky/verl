@@ -103,6 +103,14 @@ class AsyncLLMServerManager:
         )
         return output
 
+    def wake_up(self):
+        """Wake up all rollout server instances."""
+        ray.get([server.wake_up.remote() for server in self.server_handles])
+
+    def sleep(self):
+        """Sleep all rollout server instances."""
+        ray.get([server.sleep.remote() for server in self.server_handles])
+
 
 class AgentLoopMetrics(BaseModel):
     """Agent loop performance metrics."""
@@ -458,8 +466,10 @@ class AgentLoopManager:
         self.config = config
         self.worker_group = worker_group
 
+        self.async_llm_servers = []
+
         self._initialize_llm_servers()
-        self._init_agent_loop_workers()
+        # self._init_agent_loop_workers()
 
         # Initially we're in sleep mode.
         self.sleep()
