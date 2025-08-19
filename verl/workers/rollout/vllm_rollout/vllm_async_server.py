@@ -254,6 +254,9 @@ class AsyncvLLMServer(AsyncServerBase):
             else:
                 logger.warning(f"cudagraph_capture_sizes must be a list, but got {cudagraph_capture_sizes}")
 
+        max_num_seqs = config.max_num_seqs
+        if max_num_seqs > 8:
+            raise ValueError("max_num_seqs >=8 is risky, please delete this warning but watchout for model madness.")
         engine_args = AsyncEngineArgs(
             model=local_path,
             enable_sleep_mode=config.free_cache_engine,
@@ -266,14 +269,15 @@ class AsyncvLLMServer(AsyncServerBase):
             disable_custom_all_reduce=True,
             skip_tokenizer_init=False,
             max_model_len=self.max_model_len,
-            max_num_seqs=config.max_num_seqs,
+            max_num_seqs=max_num_seqs,
             load_format="auto",
             disable_log_stats=config.disable_log_stats,
-            max_num_batched_tokens=max_num_batched_tokens,
+            # max_num_batched_tokens=max_num_batched_tokens,
             enable_chunked_prefill=config.enable_chunked_prefill,
             enable_prefix_caching=True,
             trust_remote_code=trust_remote_code,
-            seed=config.get("seed", 0),
+            seed=self.vllm_dp_rank,
+            # seed=config.get("seed", 0),
             **compilation_config,
         )
 
@@ -329,8 +333,10 @@ class AsyncvLLMServer(AsyncServerBase):
             return JSONResponse(content=generator.model_dump())
 
     async def generate(self, prompt_ids: list[int], sampling_params: dict[str, Any], request_id: str) -> list[int]:
-        max_tokens = self.max_model_len - len(prompt_ids)
-        sampling_params = SamplingParams(max_tokens=max_tokens, **sampling_params)
+        # max_tokens = self.max_model_len - len(prompt_ids)
+        sampling_params = SamplingParams(**sampling_params)
+        from vsdb import bp
+        bp(tag='deb2', once=True)
         prompt = TokensPrompt(prompt_token_ids=prompt_ids)
         generator = self.engine.generate(prompt=prompt, sampling_params=sampling_params, request_id=request_id)
 
@@ -340,7 +346,7 @@ class AsyncvLLMServer(AsyncServerBase):
             final_res = output
         assert final_res is not None
 
-        return final_res.outputs[0].token_ids
+        return final_res
 
     async def wake_up(self):
         if self.config.rollout.free_cache_engine:

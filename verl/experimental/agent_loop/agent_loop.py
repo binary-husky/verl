@@ -23,6 +23,7 @@ import hydra
 import numpy as np
 import ray
 import torch
+import threading
 from cachetools import LRUCache
 from omegaconf import DictConfig, OmegaConf
 from pydantic import BaseModel, ConfigDict
@@ -65,17 +66,19 @@ class AsyncLLMServerManager:
 
         # LRU cache to map request_id to server
         self.request_id_to_server = LRUCache(maxsize=max_cache_size)
+        self.thread_lock = threading.Lock()
 
     def _choose_server(self, request_id: str) -> ray.actor.ActorHandle:
-        # TODO: implement server pressure awareness load balancing
-        if request_id in self.request_id_to_server:
-            return self.request_id_to_server[request_id]
+        with self.thread_lock:
+            # TODO: implement server pressure awareness load balancing
+            if request_id in self.request_id_to_server:
+                return self.request_id_to_server[request_id]
 
-        server = self.weighted_serveres[0][1][1]
-        self.weighted_serveres[0][0] += 1
-        heapq.heapreplace(self.weighted_serveres, self.weighted_serveres[0])
-        self.request_id_to_server[request_id] = server
-        return server
+            server = self.weighted_serveres[0][1][1]
+            self.weighted_serveres[0][0] += 1
+            heapq.heapreplace(self.weighted_serveres, self.weighted_serveres[0])
+            self.request_id_to_server[request_id] = server
+            return server
 
     @rollout_trace_op
     async def generate(

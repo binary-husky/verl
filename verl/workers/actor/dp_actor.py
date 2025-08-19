@@ -413,6 +413,8 @@ class DataParallelPPOActor(BasePPOActor):
                     response_mask = model_inputs["response_mask"]
                     old_log_prob = model_inputs["old_log_probs"]
                     advantages = model_inputs["advantages"]
+                    input_ids = model_inputs["input_ids"]
+                    print(f'*** Current tensor shape, input_ids {input_ids.shape}, response {response_mask.shape}')
 
                     entropy_coeff = self.config.entropy_coeff
                     loss_agg_mode = self.config.loss_agg_mode

@@ -57,8 +57,12 @@ class AsyncServerBase(ABC):
 
         app = fastapi.FastAPI(lifespan=lifespan)
         app.router.add_api_route("/v1/chat/completions", self.chat_completion, methods=["POST"])
+        # app.router.add_api_route("/v1/chat/generate", self.chat_completion, methods=["POST"])
 
         self.port = _get_free_port()
+        print(f'|---------------------------------------------------|')
+        print(f'VLLM serving at port http://127.0.0.1:{self.port}')
+        print(f'|---------------------------------------------------|')
         config = uvicorn.Config(app, host=["::", "0.0.0.0"], port=self.port, log_level="warning")
         server = uvicorn.Server(config)
         await server.serve()
