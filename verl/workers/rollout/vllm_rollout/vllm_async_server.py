@@ -255,8 +255,8 @@ class AsyncvLLMServer(AsyncServerBase):
                 logger.warning(f"cudagraph_capture_sizes must be a list, but got {cudagraph_capture_sizes}")
 
         max_num_seqs = config.max_num_seqs
-        if max_num_seqs > 8:
-            raise ValueError("max_num_seqs >=8 is risky, please delete this warning but watchout for model madness.")
+        # if max_num_seqs > 8:
+        #     raise ValueError("max_num_seqs >=8 is risky, please delete this warning but watchout for model madness.")
         engine_args = AsyncEngineArgs(
             model=local_path,
             enable_sleep_mode=config.free_cache_engine,
