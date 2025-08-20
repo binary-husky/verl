@@ -368,7 +368,7 @@ class SGLangRollout(BaseRollout):
             self.config.max_model_len = self.config.prompt_length + self.config.response_length
         assert (
             self.config.max_model_len >= self.config.prompt_length + self.config.response_length
-        ), f"""max_model_len should be greater than total sequence length (prompt_length + response_length): 
+        ), f"""max_model_len should be greater than total sequence length (prompt_length + response_length):
             {self.config.max_model_len} >= {self.config.prompt_length} + {self.config.response_length}"""
         max_position_embeddings = None
         if hasattr(model_hf_config, "max_position_embeddings"):
@@ -430,6 +430,7 @@ class SGLangRollout(BaseRollout):
         first_rank_in_node = self._tp_rank % tp_size_per_node == 0
         engine_kwargs = self.config.get("engine_kwargs", {}).get("sglang", {})
         attention_backend = engine_kwargs.get("attention_backend", None)
+        max_running_requests = self.config.get("max_num_seqs", None)
 
         if first_rank_in_node:
             rank = dist.get_rank()
@@ -446,6 +447,7 @@ class SGLangRollout(BaseRollout):
                 load_format=load_format,
                 dist_init_addr=dist_init_addr,
                 nnodes=nnodes,
+                max_running_requests=max_running_requests,
                 trust_remote_code=trust_remote_code,
                 # NOTE(linjunrong): add rank to prevent SGLang generate same port inside PortArgs.init_new
                 # when random.seed is being set during training
@@ -1113,8 +1115,8 @@ class SGLangRollout(BaseRollout):
                 == req.attention_mask.shape[-1]
                 == req.position_ids.shape[-1]
                 == req.loss_mask.shape[-1]
-            ), f"""Request {req.request_id} has different length of 
-                {req.input_ids.shape[-1]=}, {req.attention_mask.shape[-1]=}, 
+            ), f"""Request {req.request_id} has different length of
+                {req.input_ids.shape[-1]=}, {req.attention_mask.shape[-1]=},
                 {req.position_ids.shape[-1]=}, {req.loss_mask.shape[-1]=}"""
             error_message_lines = [
                 f"""Request {req.request_id} has input_ids length {req.input_ids.shape[-1]}
@@ -1132,7 +1134,7 @@ class SGLangRollout(BaseRollout):
             response_ids.append(req.response_ids.to(tgt_device).squeeze(0))
             if req.response_ids.shape[-1] > self.config.response_length:
                 logger.warning(
-                    f"""{req.request_id=} has response_ids length {req.response_ids.shape[-1]} 
+                    f"""{req.request_id=} has response_ids length {req.response_ids.shape[-1]}
                     greater than max_response_len {self.config.response_length},\n{req=}"""
                 )
             prompt_attention_mask.append(req.prompt_attention_mask.to(tgt_device).squeeze(0))
@@ -1326,10 +1328,10 @@ class SGLangRollout(BaseRollout):
                 tokenization_sanity_check_mode=self.config.multi_turn.tokenization_sanity_check_mode,
                 processing_class=self.processing_class,
             )
-            error_message = f"""Request {req.request_id} has mismatched lengths: 
-            input_ids={req.input_ids.shape[-1]}, 
-            attention_mask={req.attention_mask.shape[-1]}, 
-            position_ids={req.position_ids.shape[-1]}, 
+            error_message = f"""Request {req.request_id} has mismatched lengths:
+            input_ids={req.input_ids.shape[-1]},
+            attention_mask={req.attention_mask.shape[-1]},
+            position_ids={req.position_ids.shape[-1]},
             loss_mask={req.loss_mask.shape[-1]}"""
             assert (
                 req.input_ids.shape[-1]
