@@ -186,12 +186,13 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
 
         # normalize config
         if self._is_actor:
-            self.config.actor.ppo_mini_batch_size *= self.config.rollout.n
+            # self.config.actor.ppo_mini_batch_size *= self.config.rollout.n
             self.config.actor.ppo_mini_batch_size //= self.device_mesh.size() // self.ulysses_sequence_parallel_size
-            assert self.config.actor.ppo_mini_batch_size > 0, (
-                f"ppo_mini_batch_size {self.config.actor.ppo_mini_batch_size} should be larger than 0 after "
-                f"normalization"
-            )
+            if self.config.actor.ppo_mini_batch_size <= 0:
+                # `ppo_mini_batch_size` is deprecated
+                # replaced by the `actor_rollout_ref.actor.override_ppo_mini_batch_num` config
+                # which define the number of number of optimizer steps per train-batch-step
+                self.config.actor.ppo_mini_batch_size = 1
             # micro bsz
             if self.config.actor.ppo_micro_batch_size is not None:
                 self.config.actor.ppo_micro_batch_size //= (
