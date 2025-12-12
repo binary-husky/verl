@@ -335,8 +335,6 @@ class AsyncvLLMServer(AsyncServerBase):
     async def generate(self, prompt_ids: list[int], sampling_params: dict[str, Any], request_id: str) -> list[int]:
         # max_tokens = self.max_model_len - len(prompt_ids)
         sampling_params = SamplingParams(**sampling_params)
-        from vsdb import bp
-        bp(tag='deb2', once=True)
         prompt = TokensPrompt(prompt_token_ids=prompt_ids)
         generator = self.engine.generate(prompt=prompt, sampling_params=sampling_params, request_id=request_id)
 
