@@ -49,7 +49,7 @@ PRIME_REQUIRES = ["pyext"]
 GEO_REQUIRES = ["mathruler", "torchvision", "qwen_vl_utils"]
 GPU_REQUIRES = ["liger-kernel", "flash-attn"]
 MATH_REQUIRES = ["math-verify"]  # Add math-verify as an optional dependency
-VLLM_REQUIRES = ["tensordict>=0.8.0,<=0.9.1,!=0.9.0", "vllm>=0.7.3,<=0.9.1"]
+VLLM_REQUIRES = ["tensordict>=0.8.0,<=0.9.1,!=0.9.0", "vllm==0.10.0"]
 SGLANG_REQUIRES = [
     "tensordict>=0.8.0,<=0.9.1,!=0.9.0",
     "sglang[srt,openai]==0.4.9.post6",
@@ -94,3 +94,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
+
+# rm -rf build dist
+# python setup.py sdist bdist_wheel
+# twine upload dist/*
